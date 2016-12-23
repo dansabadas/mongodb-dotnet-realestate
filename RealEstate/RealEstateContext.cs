@@ -11,10 +11,23 @@ namespace RealEstate
         public RealEstateContext()
         {
             var client = new MongoClient(Settings.Default.LocalRealEstateConnectionString);
-            var server = client.GetServer();
-            Database = server.GetDatabase(Settings.Default.RealEstateDatabaseName);
+            Database = client.GetServer().GetDatabase(Settings.Default.RealEstateDatabaseName);
+
         }
 
         public MongoCollection<Rental> Rentals => Database.GetCollection<Rental>("rentals");
+    }
+
+    public class RealEstateContextNewApis
+    {
+        public readonly IMongoDatabase Database;
+
+        public RealEstateContextNewApis()
+        {
+            var client = new MongoClient(Settings.Default.LocalRealEstateConnectionString);
+            Database = client.GetDatabase(Settings.Default.RealEstateDatabaseName);
+        }
+
+        public IMongoCollection<Rental> Rentals => Database.GetCollection<Rental>("rentals");
     }
 }

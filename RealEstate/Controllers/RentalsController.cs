@@ -147,7 +147,7 @@ namespace RealEstate.Controllers
             //rental.ImageId = null;
             //Context.Rentals.Save(rental);
 
-            //
+            //better performance but less elegant than the full Replace scenario commented above
             SetRentalImageId(rental.Id, null);
         }
 

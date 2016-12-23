@@ -10,3 +10,5 @@ mongod --dbpath ../data
 we need to have previously created a sibling subfolder 'data' of the 'bin' subfolder
 
 install robomongo as UI Admin tool for the MongoDB (robomongo.org)
+
+we could also use a mongod.cfg configuration file
