@@ -17,8 +17,7 @@ namespace Tests
         [Test]
         public void ToDocument_RentalWithPrice_PriceRepresentedAsDouble()
         {
-            var rental = new Rental();
-            rental.Price = 1;
+            var rental = new Rental {Price = 1};
 
             var document = rental.ToBsonDocument();
 
@@ -27,8 +26,7 @@ namespace Tests
         [Test]
         public void ToDocument_RentalWithId_IdRepresentedAsObjectId()
         {
-            var rental = new Rental();
-            rental.Id = ObjectId.GenerateNewId().ToString();
+            var rental = new Rental {Id = ObjectId.GenerateNewId().ToString()};
 
             var document = rental.ToBsonDocument();
 
