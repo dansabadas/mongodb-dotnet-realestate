@@ -11,7 +11,9 @@ namespace RealEstate
         public RealEstateContext()
         {
             var client = new MongoClient(Settings.Default.LocalRealEstateConnectionString);
+#pragma warning disable 618
             Database = client.GetServer().GetDatabase(Settings.Default.RealEstateDatabaseName);
+#pragma warning restore 618
 
         }
 
@@ -24,7 +26,13 @@ namespace RealEstate
 
         public RealEstateContextNewApis()
         {
-            var client = new MongoClient(Settings.Default.LocalRealEstateConnectionString);
+            var settings = MongoClientSettings.FromUrl(new MongoUrl(Settings.Default.RealEstateConnectionString));
+            //settings.ClusterConfigurator = builder => builder.Subscribe<CommandStartedEvent>(started =>
+            //{
+
+            //});
+            settings.ClusterConfigurator = builder => builder.Subscribe(new Log4NetMongoEvents());
+            var client = new MongoClient(settings);
             Database = client.GetDatabase(Settings.Default.RealEstateDatabaseName);
         }
 

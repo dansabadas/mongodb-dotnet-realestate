@@ -8,9 +8,9 @@
 @using (Html.BeginForm())
 {
     <label for="PriceLimit">Price Limit</label>
-    <input type="text" name="PriceLimit" value="@Model.Filters.PriceLimit" />
+    <input type="text" id="PriceLimit", name="PriceLimit" value="@Model.Filters.PriceLimit" />
     <label for="MinimumRooms">Minimum Rooms</label>
-    <input type="text" name="MinimumRooms" value="@Model.Filters.MinimumRooms" />
+    <input type="text" id="MinimumRooms", name="MinimumRooms" value="@Model.Filters.MinimumRooms" />
     <input type="submit" value="Search" />
 }
 <p>
@@ -30,7 +30,7 @@
         <th>
             Price
         </th>
-        <th>Last Adjustment</th>
+        @*<th>Last Adjustment</th>*@
         <th></th>
         <th></th>
         <th></th>
@@ -51,9 +51,9 @@
             <td>
                 @Html.DisplayFor(modelItem => rental.Price)
             </td>
-            <td>
+            @*<td>
                 @rental.Adjustments.Select(a => a.Describe()).LastOrDefault()
-            </td>
+            </td>*@
             <td>
                 @Html.ActionLink("Adjust Price", "AdjustPrice", new { id = rental.Id })
             </td>
