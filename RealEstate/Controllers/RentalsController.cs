@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -25,18 +26,30 @@ namespace RealEstate.Controllers
             //    //.SetSortOrder(SortBy<Rental>.Ascending(r => r.Price));
             var filterDefinition = filters.ToFilterDefinition();
 
-            var rentalsQuery = ContextNew.Rentals
-                .Find(filterDefinition)
-                .Project(r => new RentalViewModel   // Mongo v2 driver is smart enough that converts to the apropriate select
+            //var rentalsQuery = ContextNew.Rentals
+            //    .Find(filterDefinition)
+            //    .Project(r => new RentalViewModel   // Mongo v2 driver is smart enough that converts to the apropriate select
+            //    {
+            //        Id = r.Id,
+            //        Address = r.Address,
+            //        Description = r.Description,
+            //        NumberOfRooms = r.NumberOfRooms,
+            //        Price = r.Price
+            //    })
+            //    .SortBy(r => r.Price) // overload for .Sort(Builders<Rental>.Sort.Ascending(r => r.Price))
+            //    .ThenByDescending(r => r.NumberOfRooms);
+
+            var rentalsQuery = FilterRentals2(filters)
+               .Select(r => new RentalViewModel   // Mongo v2 driver is smart enough that converts to the apropriate select
                 {
-                    Id = r.Id,
-                    Address = r.Address,
-                    Description = r.Description,
-                    NumberOfRooms = r.NumberOfRooms,
-                    Price = r.Price
-                })
-                .SortBy(r => r.Price) // overload for .Sort(Builders<Rental>.Sort.Ascending(r => r.Price))
-                .ThenByDescending(r => r.NumberOfRooms);
+                   Id = r.Id,
+                   Address = r.Address,
+                   Description = r.Description,
+                   NumberOfRooms = r.NumberOfRooms,
+                   Price = r.Price
+               })
+               .OrderBy(r => r.Price) // overload for .Sort(Builders<Rental>.Sort.Ascending(r => r.Price))
+               .ThenByDescending(r => r.NumberOfRooms);
 
             //var queryObj = rentalsQuery.Filter.Render(BsonSerializer.SerializerRegistry.GetSerializer<Rental>(), BsonSerializer.SerializerRegistry);
             //Debug.WriteLine(queryObj);
@@ -109,8 +122,16 @@ namespace RealEstate.Controllers
 
         public string PriceDistribution()
         {
+            //return new QueryPriceDistribution()
+            //    .Run(Context.Rentals)
+            //    .ToJson();
+
+            //return new QueryPriceDistribution()
+            //    .RunAggregationFluent(ContextNew.Rentals)
+            //    .ToJson();
+
             return new QueryPriceDistribution()
-                .Run(Context.Rentals)
+                .RunLinq(ContextNew.Rentals)
                 .ToJson();
         }
 
@@ -149,6 +170,30 @@ namespace RealEstate.Controllers
             StoreImage(file, rental);
 
             return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> JoinPreLookup()
+        {
+            var rentals = await ContextNew.Rentals.Find(new BsonDocument()).ToListAsync();
+            var rentalZips = rentals.Select(r => r.ZipCode).Distinct().ToArray();
+
+            var zipsList = await ContextNew.Database.GetCollection<ZipCode>("zips")
+                .Find(z => rentalZips.Contains(z.Id))
+                .ToListAsync();
+            var zipsById = zipsList.ToDictionary(d => d.Id);
+
+            var report =
+                rentals.Select(
+                    r =>
+                        new
+                        {
+                            Rental = r,
+                            ZipCode = r.ZipCode != null && zipsById.ContainsKey(r.ZipCode) 
+                                ? zipsById[r.ZipCode] 
+                                : null
+                        });
+
+            return Content(report.ToJson(new JsonWriterSettings {OutputMode = JsonOutputMode.Strict}), "application/json");
         }
 
         private void DeleteImage(Rental rental)
@@ -215,6 +260,23 @@ namespace RealEstate.Controllers
 
             //var query = Query<Rental>.LTE(r => r.Price, filters.PriceLimit);
             //return Context.Rentals.Find(query);
+        }
+
+        private IMongoQueryable<Rental> FilterRentals2(RentalsFilter filters)
+        {
+            IMongoQueryable<Rental> rentals = ContextNew.Rentals.AsQueryable();
+
+            if (filters.MinimumRooms.HasValue)
+            {
+                rentals = rentals.Where(r => r.NumberOfRooms >= filters.MinimumRooms.Value);    // the regular LINQ does not work with nullable! must specify explicily the .Value of a nullable!
+            }
+
+            if (filters.PriceLimit.HasValue)
+            {
+                rentals = rentals.Where(r => r.Price <= filters.PriceLimit.Value);
+            }
+
+            return rentals;
         }
 
         private Rental GetRental(string id)

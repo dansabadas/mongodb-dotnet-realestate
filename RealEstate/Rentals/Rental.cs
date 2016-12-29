@@ -21,7 +21,9 @@ namespace RealEstate.Rentals
 
         public string ImageId { get; set; }
 
-// decimal is not well dupported by mongodb and associated driver
+        public string ZipCode { get; set; }
+
+        // decimal is not well dupported by mongodb and associated driver
 
         public List<PriceAdjustment> Adjustments = new List<PriceAdjustment>();
         public Rental()
@@ -35,6 +37,7 @@ namespace RealEstate.Rentals
             NumberOfRooms = postRental.NumberOfRooms;
             Price = postRental.Price;
             Address = (postRental.Address ?? string.Empty).Split('\n').ToList();
+            ZipCode = postRental.ZipCode;
         }
 
         public void AdjustPrice(AdjustPrice adjustPrice)

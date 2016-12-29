@@ -26,7 +26,7 @@ namespace RealEstate
 
         public RealEstateContextNewApis()
         {
-            var settings = MongoClientSettings.FromUrl(new MongoUrl(Settings.Default.RealEstateConnectionString));
+            var settings = MongoClientSettings.FromUrl(new MongoUrl(Settings.Default.LocalRealEstateConnectionString));  // RealEstateConnectionString
             //settings.ClusterConfigurator = builder => builder.Subscribe<CommandStartedEvent>(started =>
             //{
 
