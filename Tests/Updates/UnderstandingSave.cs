@@ -17,7 +17,7 @@ namespace Tests.Updates
 		[Test]
 		public void Save_Using_Update()
 		{
-			var rentals = new RealEstateContext().Database.GetCollection<Rental>("rentals");
+			var rentals = new RealEstateContextNewApis().R;
 
 			var rental = new Rental();
 			rental.Id = ObjectId.GenerateNewId().ToString();

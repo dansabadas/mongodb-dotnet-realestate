@@ -1,25 +1,10 @@
 ﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 using RealEstate.Properties;
 using RealEstate.Rentals;
 
 namespace RealEstate
 {
-    public class RealEstateContext
-    {
-        public readonly MongoDatabase Database;
-
-        public RealEstateContext()
-        {
-            var client = new MongoClient(Settings.Default.LocalRealEstateConnectionString);
-#pragma warning disable 618
-            Database = client.GetServer().GetDatabase(Settings.Default.RealEstateDatabaseName);
-#pragma warning restore 618
-
-        }
-
-        public MongoCollection<Rental> Rentals => Database.GetCollection<Rental>("rentals");
-    }
-
     public class RealEstateContextNewApis
     {
         public readonly IMongoDatabase Database;
@@ -32,9 +17,11 @@ namespace RealEstate
 
             //});
             settings.ClusterConfigurator = builder => builder.Subscribe(new Log4NetMongoEvents());
-            var client = new MongoClient(settings);
-            Database = client.GetDatabase(Settings.Default.RealEstateDatabaseName);
+            Database = new MongoClient(settings).GetDatabase(Settings.Default.RealEstateDatabaseName);
+            ImagesBucket = new GridFSBucket(Database, new GridFSBucketOptions());
         }
+
+        public GridFSBucket ImagesBucket { get; set; }
 
         public IMongoCollection<Rental> Rentals => Database.GetCollection<Rental>("rentals");
     }

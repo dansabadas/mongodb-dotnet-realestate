@@ -15,7 +15,7 @@ namespace Tests.Updates
 		[Test]
 		public void CreatingCounters()
 		{
-			var context = new RealEstateContext();
+			var context = new RealEstateContextNewApis();
 
 			var counters = context.Database.GetCollection("counters");
 			counters.Drop();

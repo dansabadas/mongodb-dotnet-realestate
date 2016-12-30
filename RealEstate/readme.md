@@ -12,3 +12,19 @@ we need to have previously created a sibling subfolder 'data' of the 'bin' subfo
 install robomongo as UI Admin tool for the MongoDB (robomongo.org)
 
 we could also use a mongod.cfg configuration file
+
+some nice mongo queries
+
+var mapStatePopulations = function() { emit(this.state, this.pop); }
+var reduceStatePopulation = function(state, zipCodePopulations) { return Array.sum(zipCodePopulations); }
+db.zips.mapReduce(
+    mapStatePopulations,
+    reduceStatePopulation,
+    { out: "statePopulations" }
+    );
+db.zips.aggregate([
+    {$group: { _id: "$state", population: { $sum: "$pop"}}},
+    {$match: { population: { $lte: 1e6}}},
+    {$sort: {population: 1}}
+    ])
+
